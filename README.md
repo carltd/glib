@@ -10,6 +10,7 @@ go get github.com/go-xorm/xorm
 go get github.com/go-sql-driver/mysql
 go get github.com/bradfitz/gomemcache/memcache
 go get github.com/garyburd/redigo/redis
+go get gopkg.in/mgo.v2
 
 
 #install glib
@@ -21,7 +22,7 @@ go get github.com/carltd/glib
 
 start `consul` as config center
 ```bash
-consul agent -ui -dev -server -data-dir=/tmp
+consul agent -ui -server -data-dir=/tmp
 
 vi ~/glib-test.go
 ```
@@ -37,6 +38,7 @@ import (
 	"github.com/carltd/glib"
 	_ "github.com/carltd/glib/cache/memcache"
 	_ "github.com/carltd/glib/cache/redis"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type User struct {
@@ -61,29 +63,53 @@ func main() {
 	if err = glib.Init(glib.WithServiceDomain("com.carltd.srv.demo")); err != nil {
 		log.Fatal(err)
 	}
+	defer glib.Destroy()
 
+	// cache usage
 	log.Log(glib.Cache("rc").Put(cacheKey, cacheValue, cacheExpire))
 	log.Log(glib.Cache("mc").Put(cacheKey, cacheValue, cacheExpire))
 
 	log.Log(glib.Cache("rc").Get(cacheKey))
 	log.Log(glib.Cache("mc").Get(cacheKey))
 
+	// mysql usage
 	exists, err = glib.DB("db1").Get(&user)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if exists {
-		log.Logf("%#v", user)
+		log.Logf("%+v", user)
 	}
+
+	// mongodb usage
+	var v interface{}
+	s := glib.MgoShareClone("mgo")
+	err = s.DB("test").C("col1").Find(bson.M{}).One(&v)
+	s.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Logf("%+v", v)
+
+
+	s = glib.MgoShareCopy("mgo")
+	err = s.DB("test").C("col1").Find(bson.M{}).One(&v)
+	s.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Logf("%+v", v)
 }
+
 ```
 
 config consul kv
 **\com.carltd.srv.demo\glib-supports**:
 ```json
 {
-    "db":true,
-    "cache":true
+    "db": true,
+    "cache": true,
+    "mgo": true
 }
 ```
 
@@ -116,6 +142,17 @@ config consul kv
     "ttl": 30
 }]
 ```
+
+**\com.carltd.srv.demo\glib-mgo**:
+```json
+[{
+    "enable": true,
+    "alias": "mgo",
+    "ttl":60,
+    "dsn": "mongodb://127.0.0.1:27017"
+}]
+```
+
 
 at last, run glib-test.go
 ```

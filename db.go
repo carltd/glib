@@ -14,7 +14,7 @@ import (
 )
 
 // DBConfig is config for struct
-type DBConfig struct {
+type dbConfig struct {
 	Enable   bool          `json:"enable"`
 	ShowSql  bool          `json:"showSql"`
 	LogLevel string        `json:"logLevel"`
@@ -51,7 +51,7 @@ func logLevel(name string) core.LogLevel {
 	}
 }
 
-func runDBManger(ctx context.Context, opts ...*DBConfig) error {
+func runDBManger(ctx context.Context, opts ...*dbConfig) error {
 	for _, opt := range opts {
 		if opt.Enable {
 			eg, err := xorm.NewEngineGroup(opt.Driver, opt.Dsn)

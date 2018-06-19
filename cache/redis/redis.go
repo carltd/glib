@@ -3,16 +3,16 @@ package redis
 import (
 	"time"
 
-	"github.com/carltd/glib"
 	"github.com/garyburd/redigo/redis"
 	"github.com/micro/go-log"
+	"github.com/carltd/glib/internal"
 )
 
 type RCache struct {
 	p *redis.Pool
 }
 
-func NewRedisCache(config *glib.CacheConfig) glib.Cacher {
+func NewRedisCache(config *internal.CacheConfig) internal.Cacher {
 	c := &RCache{}
 
 	opt, err := parseRedisDSN(config.Dsn)
@@ -103,5 +103,5 @@ func (c *RCache) ClearAll() (err error) {
 }
 
 func init() {
-	glib.RegisterCacheDriver("redis", NewRedisCache)
+	internal.RegisterCacheDriver("redis", NewRedisCache)
 }

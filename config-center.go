@@ -12,7 +12,7 @@ type configCenter struct {
 	conf          config.Config
 }
 
-func newConfigCenter(ctx context.Context, opts ...Option) (*configCenter, error) {
+func newConfigCenter(ctx context.Context, opts ...option) (*configCenter, error) {
 	// TODO: context manager
 	_ = ctx
 	cc := &configCenter{}
@@ -20,7 +20,7 @@ func newConfigCenter(ctx context.Context, opts ...Option) (*configCenter, error)
 	return cc, err
 }
 
-func (cc *configCenter) Init(opts ...Option) error {
+func (cc *configCenter) Init(opts ...option) error {
 
 	options := newOptions(opts...)
 

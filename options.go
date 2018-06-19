@@ -2,7 +2,7 @@ package glib
 
 import "context"
 
-type Options struct {
+type options struct {
 
 	// service domain for config center
 	ServiceDomain string
@@ -15,21 +15,21 @@ type Options struct {
 	Context context.Context
 }
 
-type Option func(*Options)
+type option func(*options)
 
-func WithServiceDomain(domain string) Option {
-	return func(o *Options) {
+func WithServiceDomain(domain string) option {
+	return func(o *options) {
 		o.ServiceDomain = domain
 	}
 }
-func WithDiscoverAddr(addr string) Option {
-	return func(o *Options) {
+func WithDiscoverAddr(addr string) option {
+	return func(o *options) {
 		o.DiscoverAddr = addr
 	}
 }
 
-func newOptions(opts ...Option) Options {
-	opt := Options{
+func newOptions(opts ...option) options {
+	opt := options{
 		ServiceDomain: "com.lonphy.example",
 		DiscoverAddr:  "127.0.0.1:8500",
 	}

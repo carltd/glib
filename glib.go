@@ -2,20 +2,21 @@ package glib
 
 import (
 	"context"
-
+	"github.com/carltd/glib/internal"
 )
 
 type featureEnabledOptions struct {
-	Db      bool `json:"db"`
-	Cache   bool `json:"cache"`
-	Queue   bool `json:"queue"`
-	Mongodb bool `json:"mongodb"`
+	Db    bool `json:"db"`
+	Cache bool `json:"cache"`
+	Queue bool `json:"queue"`
+	Mgo   bool `json:"mgo"`
 }
 
 const (
 	kGlibConfigEnablesKey = "glib-supports"
 	kGlibConfigDb         = "glib-db"
 	kGlibConfigCache      = "glib-cache"
+	kGlibConfigMgo        = "glib-mgo"
 )
 
 var (
@@ -25,7 +26,7 @@ var (
 )
 
 // Init enabled features
-func Init(opts ...Option) error {
+func Init(opts ...option) error {
 
 	var err error
 
@@ -34,15 +35,13 @@ func Init(opts ...Option) error {
 		return err
 	}
 
-	//log.Logf("config center loaded: %s", confCenter.conf.Bytes())s
-
 	if err = confCenter.Load(kGlibConfigEnablesKey, defEnabledOptions); err != nil {
 		return release(err)
 	}
 
 	// init database
 	if defEnabledOptions.Db {
-		dbConfig := make([]*DBConfig, 0)
+		dbConfig := make([]*dbConfig, 0)
 		if err = confCenter.Load(kGlibConfigDb, &dbConfig); err != nil {
 			return release(err)
 		}
@@ -54,12 +53,24 @@ func Init(opts ...Option) error {
 
 	// init cache
 	if defEnabledOptions.Cache {
-		cacheConfig := make([]*CacheConfig, 0)
+		cacheConfig := make([]*internal.CacheConfig, 0)
 		if err = confCenter.Load(kGlibConfigCache, &cacheConfig); err != nil {
 			return release(err)
 		}
 
 		if err = runCacheManger(ctx, cacheConfig...); err != nil {
+			return release(err)
+		}
+	}
+
+	// init mongodb
+	if defEnabledOptions.Mgo {
+		mgoConfig := make([]*mgoConfig, 0)
+		if err = confCenter.Load(kGlibConfigMgo, &mgoConfig); err != nil {
+			return release(err)
+		}
+
+		if err = runMgoManager(mgoConfig...); err != nil {
 			return release(err)
 		}
 	}
@@ -70,6 +81,7 @@ func Init(opts ...Option) error {
 func release(err error) error {
 	stop()
 	closeDb()
+	closeMgo()
 	return err
 }
 

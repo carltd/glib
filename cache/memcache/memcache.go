@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
-	"github.com/carltd/glib"
+	"github.com/carltd/glib/internal"
 )
 
 type MCache struct {
@@ -13,7 +13,7 @@ type MCache struct {
 }
 
 // NewMemCache create new memcache adapter.
-func newMemCache(config *glib.CacheConfig) glib.Cacher {
+func newMemCache(config *internal.CacheConfig) internal.Cacher {
 	return &MCache{
 		conn: memcache.New(config.Dsn),
 	}
@@ -66,5 +66,5 @@ func (c *MCache) ClearAll() error {
 }
 
 func init() {
-	glib.RegisterCacheDriver("memcache", newMemCache)
+	internal.RegisterCacheDriver("memcache", newMemCache)
 }

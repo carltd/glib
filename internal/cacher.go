@@ -1,6 +1,9 @@
-package glib
+package internal
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type Cacher interface {
 	// update value's expire time to timeout
@@ -27,4 +30,21 @@ type CacheConfig struct {
 	Driver string        `json:"driver"`
 	Dsn    string        `json:"dsn"`
 	TTL    time.Duration `json:"ttl"`
+}
+
+var (
+	cacheDrivers sync.Map
+)
+
+func RegisterCacheDriver(driverName string, creator CacheCreator) {
+	cacheDrivers.Store(driverName, creator)
+}
+
+func CacheDriver(driver string) (CacheCreator, bool) {
+	d, ok := cacheDrivers.Load(driver)
+	if ok {
+		c, ok := d.(CacheCreator)
+		return c, ok
+	}
+	return nil, false
 }
