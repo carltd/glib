@@ -2,20 +2,9 @@
 
 ## Install glib
 ```bash
-#install consul depends
-go install github.com/hashicorp/consul
-go get github.com/micro/go-config
-go get github.com/micro/go-log
-go get github.com/go-xorm/xorm
-go get github.com/go-sql-driver/mysql
-go get github.com/bradfitz/gomemcache/memcache
-go get github.com/garyburd/redigo/redis
-go get gopkg.in/mgo.v2
-
-
 #install glib
 go get github.com/carltd/glib
-
+dep ensure
 ```
 
 ## Usage
