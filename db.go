@@ -6,65 +6,49 @@ import (
 	"sync"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/go-xorm/core"
-	"github.com/go-xorm/xorm"
-
 	"github.com/micro/go-log"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 // DBConfig is config for struct
 type dbConfig struct {
 	Enable   bool          `json:"enable"`
-	ShowSql  bool          `json:"showSql"`
-	LogLevel string        `json:"logLevel"`
+	Debug    bool          `json:"debug"`
 	Alias    string        `json:"alias"`
 	Driver   string        `json:"driver"`
-	Dsn      []string      `json:"dsn"`
+	Dsn      string        `json:"dsn"`
 	TTL      time.Duration `json:"ttl"`
 }
 
 var dbs sync.Map
 
 // DB will return a instance of `xorm.EngineGroup`, panic if it's not exists
-func DB(alias string) *xorm.EngineGroup {
-
+func DB(alias string) *gorm.DB {
 	eg, ok := dbs.Load(alias)
 	if !ok {
 		panic(fmt.Errorf("glib: db[%s] not configed", alias))
 	}
-	return eg.(*xorm.EngineGroup)
-}
-
-func logLevel(name string) core.LogLevel {
-	switch name {
-	case "debug":
-		return core.LOG_DEBUG
-	case "info":
-		return core.LOG_INFO
-	case "warning":
-		return core.LOG_WARNING
-	case "err":
-		return core.LOG_ERR
-	default:
-		return core.LOG_OFF
-	}
+	return eg.(*gorm.DB)
 }
 
 func runDBManger(ctx context.Context, opts ...*dbConfig) error {
 	for _, opt := range opts {
 		if opt.Enable {
-			eg, err := xorm.NewEngineGroup(opt.Driver, opt.Dsn)
+			db, err := gorm.Open(opt.Driver, opt.Dsn)
 			if err != nil {
 				log.Logf("glib: db (%s) %v", opt.Alias, err)
 				continue
 			}
-			eg.ShowSQL(opt.ShowSql)
-			eg.SetLogLevel(logLevel(opt.LogLevel))
-
-			dbs.Store(opt.Alias, eg)
+			// TODO: transport params
+			//db.DB().SetMaxIdleConns(10)
+			//db.DB().SetMaxOpenConns(10)
+			db.LogMode(opt.Debug)
+			db.SingularTable(true)
+			dbs.Store(opt.Alias, db)
 			if opt.TTL > 0 {
-				go dbHealthCheck(ctx, opt.TTL, eg)
+				go dbHealthCheck(ctx, opt.TTL, db)
 			}
 		}
 	}
@@ -73,21 +57,21 @@ func runDBManger(ctx context.Context, opts ...*dbConfig) error {
 }
 
 // check database health, just ping it.
-func dbHealthCheck(ctx context.Context, ttl time.Duration, db *xorm.EngineGroup) {
+func dbHealthCheck(ctx context.Context, ttl time.Duration, db *gorm.DB) {
 	t := time.NewTicker(ttl * time.Second)
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-t.C:
-			db.Ping()
+			db.DB().Ping()
 		}
 	}
 }
 
 func closeDb() {
 	dbs.Range(func(key, value interface{}) bool {
-		value.(*xorm.EngineGroup).Close()
-		return true
+		err := value.(*gorm.DB).Close()
+		return err != nil
 	})
 }
