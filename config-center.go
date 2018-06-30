@@ -34,6 +34,10 @@ func (cc *configCenter) Init(opts ...option) error {
 	return cc.conf.Load(consulSrc)
 }
 
+func (cc *configCenter) String(key, defValue string) string {
+	return cc.conf.Get(cc.serviceDomain, key).String(defValue)
+}
+
 func (cc *configCenter) Load(key string, v interface{}) error {
 	return cc.conf.Get(cc.serviceDomain, key).Scan(v)
 }

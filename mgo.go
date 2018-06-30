@@ -19,7 +19,7 @@ var (
 	mgos = map[string]*mgo.Session{}
 )
 
-// Mgo will return a copy instance of `*mgo.Session`, panic if it's not exists
+// MgoShareCopy  will return a copy instance of `*mgo.Session`, panic if it's not exists
 // example:
 //	var v = make([]interface{}, 0)
 //	s := glib.MgoShareCopy("something")
@@ -38,7 +38,7 @@ func MgoShareCopy(alias string) *mgo.Session {
 	return eg.Copy()
 }
 
-// Mgo will return a clone instance of `*mgo.Session`, panic if it's not exists
+// MgoShareClone will return a clone instance of `*mgo.Session`, panic if it's not exists
 // example:
 //	var v = make([]interface{}, 0)
 //	s := glib.MgoShareClone("something")

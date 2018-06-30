@@ -6,6 +6,8 @@
 *.dylib
 vendor/
 
+gtracer/*
+
 # Test binary, build with `go test -c`
 *.test
 

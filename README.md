@@ -109,7 +109,7 @@ config consul kv
     "driver": "mysql",
     "showSql": false,
     "logLevel": "debug",
-    "dsn": ["root:@tcp(127.0.0.1:3306)/test"],
+    "dsn": "root:@tcp(127.0.0.1:3306)/test",
     "enable": true,
     "ttl": 30
 }]

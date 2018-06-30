@@ -10,6 +10,9 @@ type options struct {
 	// config center address
 	DiscoverAddr string
 
+	// non storage, eg: db, cache
+	NoStorage bool
+
 	// Other options for implementations of the interface
 	// can be stored in a context
 	Context context.Context
@@ -17,14 +20,24 @@ type options struct {
 
 type option func(*options)
 
+// WithServiceDomain - set the service's domain used prefix
 func WithServiceDomain(domain string) option {
 	return func(o *options) {
 		o.ServiceDomain = domain
 	}
 }
+
+// WithDiscoverAddr - config center address
 func WithDiscoverAddr(addr string) option {
 	return func(o *options) {
 		o.DiscoverAddr = addr
+	}
+}
+
+// WithNoStorage - none db, cache, mgo etc.
+func WithNoStorage() option {
+	return func(o *options) {
+		o.NoStorage = true
 	}
 }
 
@@ -32,6 +45,7 @@ func newOptions(opts ...option) options {
 	opt := options{
 		ServiceDomain: "com.lonphy.example",
 		DiscoverAddr:  "127.0.0.1:8500",
+		NoStorage:     false,
 	}
 
 	for _, o := range opts {
