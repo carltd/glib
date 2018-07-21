@@ -80,8 +80,11 @@ func Init(opts ...option) error {
 
 	// init tracer
 	if defEnabledOptions.Tracer {
-		tracerAddr := confCenter.String(glibConfigTracer, defaultTracerAddr)
-		if err = initTracer(tracerAddr); err != nil {
+		tCfg := tracerConfig{}
+		if err = confCenter.Load(glibConfigTracer, &tCfg); err != nil {
+			return release(err)
+		}
+		if err = initTracer(tCfg); err != nil {
 			return release(err)
 		}
 	}

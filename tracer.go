@@ -17,15 +17,23 @@ var (
 	rpt reporter.Reporter
 )
 
-func initTracer(addr string) error {
+type tracerConfig struct {
+	Address string `json:"addr"`
+}
+
+func initTracer(opt tracerConfig) error {
 	// 创建本地端点 (提供的服务名、端口号)
 	localEndpoint, err := openzipkin.NewEndpoint(confCenter.serviceDomain, "")
 	if err != nil {
 		return err
 	}
 
+	if len(opt.Address) == 0 {
+		opt.Address = defaultTracerAddr
+	}
+
 	// 创建提交Goroutine，并启动
-	rpt = http.NewReporter(addr)
+	rpt = http.NewReporter(opt.Address)
 
 	// The OpenCensus exporter wraps the Zipkin reporter
 	exporter := zipkin.NewExporter(rpt, localEndpoint)
