@@ -14,12 +14,12 @@ import (
 
 // DBConfig is config for struct
 type dbConfig struct {
-	Enable   bool          `json:"enable"`
-	Debug    bool          `json:"debug"`
-	Alias    string        `json:"alias"`
-	Driver   string        `json:"driver"`
-	Dsn      string        `json:"dsn"`
-	TTL      time.Duration `json:"ttl"`
+	Enable bool          `json:"enable"`
+	Debug  bool          `json:"debug"`
+	Alias  string        `json:"alias"`
+	Driver string        `json:"driver"`
+	Dsn    string        `json:"dsn"`
+	TTL    time.Duration `json:"ttl"`
 }
 
 var dbs sync.Map

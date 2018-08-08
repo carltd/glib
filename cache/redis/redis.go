@@ -3,9 +3,9 @@ package redis
 import (
 	"time"
 
+	"github.com/carltd/glib/internal"
 	"github.com/garyburd/redigo/redis"
 	"github.com/micro/go-log"
-	"github.com/carltd/glib/internal"
 )
 
 type RCache struct {

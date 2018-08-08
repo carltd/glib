@@ -92,6 +92,11 @@ func Init(opts ...option) error {
 	return nil
 }
 
+// get custom config Object
+func GetConfig(keyPath string) ConfigObject {
+	return confCenter.Raw(keyPath)
+}
+
 func release(err error) error {
 	stop()
 	closeDb()

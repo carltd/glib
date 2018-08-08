@@ -5,7 +5,20 @@ import (
 
 	"github.com/micro/go-config"
 	"github.com/micro/go-config/source/consul"
+	"time"
 )
+
+type ConfigObject interface {
+	Bool(def bool) bool
+	Int(def int) int
+	String(def string) string
+	Float64(def float64) float64
+	Duration(def time.Duration) time.Duration
+	StringSlice(def []string) []string
+	StringMap(def map[string]string) map[string]string
+	Scan(val interface{}) error
+	Bytes() []byte
+}
 
 type configCenter struct {
 	serviceDomain string
@@ -40,4 +53,8 @@ func (cc *configCenter) String(key, defValue string) string {
 
 func (cc *configCenter) Load(key string, v interface{}) error {
 	return cc.conf.Get(cc.serviceDomain, key).Scan(v)
+}
+
+func (cc *configCenter) Raw(key string) ConfigObject {
+	return cc.conf.Get(cc.serviceDomain, key)
 }
