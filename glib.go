@@ -2,7 +2,6 @@ package glib
 
 import (
 	"context"
-
 	"github.com/carltd/glib/internal"
 )
 
@@ -20,6 +19,7 @@ const (
 	glibConfigCache      = "glib-cache"
 	glibConfigMgo        = "glib-mgo"
 	glibConfigTracer     = "glib-tracer"
+	glibConfigBroker     = "glib-broker"
 )
 
 var (
@@ -41,7 +41,7 @@ func Init(opts ...option) error {
 	if err = confCenter.Load(glibConfigEnablesKey, defEnabledOptions); err != nil {
 		return release(err)
 	}
-
+	
 	// init database
 	if defEnabledOptions.Db {
 		dbConfig := make([]*dbConfig, 0)
@@ -78,6 +78,17 @@ func Init(opts ...option) error {
 		}
 	}
 
+	// init broker
+	if defEnabledOptions.Broker {
+		brokerConfig := make([]*brokerConfig, 0)
+		if err = confCenter.Load(glibConfigBroker, &brokerConfig); err != nil {
+			return release(err)
+		}
+		if err = runBrokerManager(brokerConfig...); err != nil {
+			return release(err)
+		}
+	}
+
 	// init tracer
 	if defEnabledOptions.Tracer {
 		tCfg := tracerConfig{}
@@ -101,7 +112,9 @@ func release(err error) error {
 	stop()
 	closeDb()
 	closeMgo()
-	return closeTracer()
+	closeTracer()
+	closeBroker()
+	return err
 }
 
 // Destroy - 释放glib管理资源
