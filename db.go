@@ -6,20 +6,20 @@ import (
 	"sync"
 	"time"
 
-	"github.com/micro/go-log"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 // DBConfig is config for struct
 type dbConfig struct {
-	Enable bool          `json:"enable"`
-	Debug  bool          `json:"debug"`
-	Alias  string        `json:"alias"`
-	Driver string        `json:"driver"`
-	Dsn    string        `json:"dsn"`
-	TTL    time.Duration `json:"ttl"`
+	Enable  bool          `json:"enable"`
+	Debug   bool          `json:"debug"`
+	Alias   string        `json:"alias"`
+	Driver  string        `json:"driver"`
+	Dsn     string        `json:"dsn"`
+	TTL     time.Duration `json:"ttl"`
+	MaxIdle int           `json:"maxIdle"`
+	MaxOpen int           `json:"maxOpen"`
 }
 
 var dbs sync.Map
@@ -38,15 +38,16 @@ func runDBManger(ctx context.Context, opts ...*dbConfig) error {
 		if opt.Enable {
 			db, err := gorm.Open(opt.Driver, opt.Dsn)
 			if err != nil {
-				log.Logf("glib: db (%s) %v", opt.Alias, err)
-				continue
+				return fmt.Errorf("glib: db (%s) %v", opt.Alias, err)
 			}
-			// TODO: transport params
-			//db.DB().SetMaxIdleConns(10)
-			//db.DB().SetMaxOpenConns(10)
+			db.DB().SetMaxIdleConns(opt.MaxIdle)
+			db.DB().SetMaxOpenConns(opt.MaxOpen)
 			db.LogMode(opt.Debug)
 			db.SingularTable(true)
 			dbs.Store(opt.Alias, db)
+			if err = db.DB().Ping(); err != nil {
+				return fmt.Errorf("[db] %s resource err:%s", opt.Alias, err)
+			}
 			if opt.TTL > 0 {
 				go dbHealthCheck(ctx, opt.TTL, db)
 			}

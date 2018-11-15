@@ -62,6 +62,15 @@ func (d *redisQueueConn) peekAvailableConn() (c redis.Conn, err error) {
 	}
 }
 
+func (d *redisQueueConn) Ping() error {
+	c, err := d.peekAvailableConn()
+	if err != nil {
+		return err
+	}
+	_, err = c.Do("PING")
+	return err
+}
+
 func (d *redisQueueConn) Publish(subject string, msg *message.Message) error {
 	msg.MessageId = util.GenMsgID()
 	c, err := d.peekAvailableConn()

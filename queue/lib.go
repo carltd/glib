@@ -40,6 +40,7 @@ type Consumer interface {
 }
 
 type Conn interface {
+	Ping() error
 	basePublisher
 	baseConsumer
 	io.Closer

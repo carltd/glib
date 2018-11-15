@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/carltd/glib/queue"
-	"github.com/micro/go-log"
 )
 
 type brokerConfig struct {
@@ -33,15 +32,19 @@ func runBrokerManager(opts ...*brokerConfig) error {
 			case BrokerTypePublisher:
 				q, err := queue.NewPublisher(opt.Driver, opt.Dsn)
 				if err != nil {
-					log.Logf("glib: broker (%s) %v", opt.Alias, err)
-					continue
+					return fmt.Errorf("glib: broker create publisher (%s) err: %v", opt.Alias, err)
+				}
+				if err = q.(queue.Conn).Ping(); err != nil {
+					return fmt.Errorf("glib: broker resource (%s) err: %v", opt.Alias, err)
 				}
 				publishers.Store(opt.Alias, q)
 			case BrokerTypeConsumer:
 				q, err := queue.NewConsumer(opt.Driver, opt.Dsn)
 				if err != nil {
-					log.Logf("glib: broker (%s) %v", opt.Alias, err)
-					continue
+					return fmt.Errorf("glib: broker create consumer (%s) err: %v", opt.Alias, err)
+				}
+				if err = q.(queue.Conn).Ping(); err != nil {
+					return fmt.Errorf("glib: broker resource (%s) err: %v", opt.Alias, err)
 				}
 				consumers.Store(opt.Alias, q)
 			default:
@@ -67,7 +70,7 @@ func closeBroker() {
 func Publisher(alias string) queue.Publisher {
 	eg, ok := publishers.Load(alias)
 	if !ok {
-		panic(fmt.Errorf("glib: broker[%s] not configed", alias))
+		panic(fmt.Errorf("glib: broker publisher[%s] not configed", alias))
 	}
 	return eg.(queue.Publisher)
 }
@@ -75,7 +78,7 @@ func Publisher(alias string) queue.Publisher {
 func Consumer(alias string) queue.Consumer {
 	eg, ok := consumers.Load(alias)
 	if !ok {
-		panic(fmt.Errorf("glib: broker[%s] not configed", alias))
+		panic(fmt.Errorf("glib: broker consumer[%s] not configed", alias))
 	}
 	return eg.(queue.Consumer)
 }

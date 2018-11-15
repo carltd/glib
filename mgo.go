@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-log/log"
 	"gopkg.in/mgo.v2"
 )
 
@@ -60,13 +59,15 @@ func runMgoManager(opts ...*mgoConfig) error {
 		if opt.Enable {
 			s, err := mgo.DialWithTimeout(opt.Dsn, opt.TTL*time.Second)
 			if err != nil {
-				log.Logf("glib: mgo[%s] %v", opt.Alias, err)
-				continue
+				return fmt.Errorf("glib: mgo[%s] create err:%s", opt.Alias, err)
 			}
 			s.SetSyncTimeout(opt.TTL * time.Second)
 			s.SetSocketTimeout(opt.TTL * time.Second)
 
 			mgos[opt.Alias] = s
+			if err = s.Ping(); err != nil {
+				return fmt.Errorf("glib: mgo[%s] not health: %v", opt.Alias, err)
+			}
 
 			// do not start a goroutine to ping, mgo.v2 already do it
 		}
