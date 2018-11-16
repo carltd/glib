@@ -68,6 +68,7 @@ func (d *redisQueueConn) Ping() error {
 		return err
 	}
 	_, err = c.Do("PING")
+	c.Close()
 	return err
 }
 
