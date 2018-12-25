@@ -1,6 +1,7 @@
 package memcache // import "github.com/carltd/glib/cache/memcache"
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -63,6 +64,25 @@ func (c *MCache) Decrement(key string) error {
 // FlushAll clear all cached in memcache.
 func (c *MCache) ClearAll() error {
 	return c.conn.FlushAll()
+}
+
+// Get cached Json value by key.
+func (c *MCache) GetJson(key string, val interface{}) error {
+	v, err := c.Get(key)
+	if err != nil {
+		return err
+	}
+	// v must be []byte
+	return json.Unmarshal(v.([]byte), val)
+}
+
+// Put Json value with key and expire time
+func (c *MCache) PutJson(key string, val interface{}, timeout time.Duration) error {
+	buf, err := json.Marshal(val)
+	if err != nil {
+		return err
+	}
+	return c.Put(key, string(buf), timeout)
 }
 
 func init() {

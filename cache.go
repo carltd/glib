@@ -27,6 +27,8 @@ func runCacheManger(ctx context.Context, opts ...*internal.CacheConfig) error {
 			cacheCreator, ok := internal.CacheDriver(opt.Driver)
 			if ok {
 				caches.Store(opt.Alias, cacheCreator(opt))
+			} else {
+				panic(fmt.Errorf("glib: cache[%s] init err", opt.Alias))
 			}
 		}
 	}

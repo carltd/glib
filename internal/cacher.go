@@ -20,6 +20,10 @@ type Cacher interface {
 	Delete(key string) error
 	// Clear all cache.
 	ClearAll() error
+	// Get cached Json value by key.
+	GetJson(key string, val interface{}) error
+	// Put Json value with key and expire time
+	PutJson(key string, val interface{}, timeout time.Duration) error
 }
 
 type CacheCreator func(config *CacheConfig) Cacher

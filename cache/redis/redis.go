@@ -1,11 +1,12 @@
 package redis
 
 import (
+	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/carltd/glib/internal"
 	"github.com/garyburd/redigo/redis"
-	"github.com/micro/go-log"
 )
 
 type RCache struct {
@@ -17,10 +18,12 @@ func NewRedisCache(config *internal.CacheConfig) internal.Cacher {
 
 	opt, err := parseRedisDSN(config.Dsn)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	opt.Url = "redis://" + opt.Url
+	if !strings.HasPrefix(opt.Url, "redis://") {
+		opt.Url = "redis://" + opt.Url
+	}
 
 	c.p = &redis.Pool{
 		MaxIdle:     opt.MaxIdle,
@@ -100,6 +103,24 @@ func (c *RCache) ClearAll() (err error) {
 	_, err = conn.Do("FLUSHDB")
 	conn.Close()
 	return err
+}
+
+// Get cached Json value by key.
+func (c *RCache) GetJson(key string, val interface{}) error {
+	v, err := redis.String(c.Get(key))
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal([]byte(v), val)
+}
+
+// Put Json value with key and expire time
+func (c *RCache) PutJson(key string, val interface{}, timeout time.Duration) error {
+	buf, err := json.Marshal(val)
+	if err != nil {
+		return err
+	}
+	return c.Put(key, string(buf), timeout)
 }
 
 func init() {
