@@ -12,7 +12,7 @@ import (
 
 const (
 	driverName  = "kafka"
-	dsn         = "127.0.0.1:9092"
+	dsn         = "kafka://127.0.0.1:9092?broker_version=2.1.0"
 	testSubject = "test-topic"
 )
 
@@ -39,7 +39,11 @@ func TestNewPublisher(t *testing.T) {
 		Body:     util.MustMessageBody(want),
 	}
 
-	qc, _ := queue.NewPublisher(driverName, dsn)
+	qc, err := queue.NewPublisher(driverName, dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	defer qc.Close()
 
 	if err := qc.Publish(testSubject, msg); err != nil {

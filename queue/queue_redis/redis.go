@@ -7,8 +7,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
-type RedisQueueDriver struct {
-}
+type redisQueueDriver struct{}
 
 // dsn format is `redis://:pass@host1:port/db?options`
 //
@@ -22,7 +21,15 @@ type RedisQueueDriver struct {
 // readTimeout    - default is 0ms
 // writeTimeout   - default is 0ms
 
-func (d *RedisQueueDriver) Open(addr string) (queue.Conn, error) {
+func (d *redisQueueDriver) OpenPublisher(addr string) (queue.Publisher, error) {
+	return d.open(addr)
+}
+
+func (d *redisQueueDriver) OpenConsumer(addr string) (queue.Consumer, error) {
+	return d.open(addr)
+}
+
+func (d *redisQueueDriver) open(addr string) (queue.Conn, error) {
 	info, err := parseURL(addr)
 	if err != nil {
 		return nil, err
@@ -61,5 +68,5 @@ func (d *RedisQueueDriver) Open(addr string) (queue.Conn, error) {
 }
 
 func init() {
-	queue.Register("redis", &RedisQueueDriver{})
+	queue.Register("redis", new(redisQueueDriver))
 }
