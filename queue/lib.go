@@ -25,6 +25,7 @@ type Publisher interface {
 
 type Subscriber interface {
 	NextMessage(timeout time.Duration) (*message.Message, error)
+	io.Closer
 }
 
 type baseConsumer interface {

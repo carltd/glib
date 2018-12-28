@@ -22,7 +22,6 @@ type redisSubscriber struct {
 }
 
 func (s *redisSubscriber) NextMessage(timeout time.Duration) (*message.Message, error) {
-
 	for {
 		switch n := s.pbConn.Receive().(type) {
 		case redis.Message:
@@ -37,8 +36,10 @@ func (s *redisSubscriber) NextMessage(timeout time.Duration) (*message.Message, 
 			return nil, n
 		}
 	}
+}
 
-	return nil, nil
+func (s *redisSubscriber) Close() error {
+	return s.pbConn.Close()
 }
 
 type redisQueueConn struct {

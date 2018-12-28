@@ -28,16 +28,18 @@ func (c *kafkaConsumer) Subscribe(topic, group string) (queue.Subscriber, error)
 		return nil, err
 	}
 
-	return &kafkaSubscriber{consumer}, nil
+	return &kafkaSubscriber{c: consumer, serverVersion: c.opts.Version}, nil
 }
 
-func (c *kafkaConsumer) Close() error {
-	// TODO: 需要实现
-	return nil
-}
+func (c *kafkaConsumer) Close() error { return nil }
 
 type kafkaSubscriber struct {
-	*cluster.Consumer
+	c             *cluster.Consumer
+	serverVersion sarama.KafkaVersion
+}
+
+func (s *kafkaSubscriber) Close() error {
+	return s.c.Close()
 }
 
 func (s *kafkaSubscriber) NextMessage(timeout time.Duration) (*message.Message, error) {
@@ -49,26 +51,27 @@ func (s *kafkaSubscriber) NextMessage(timeout time.Duration) (*message.Message, 
 
 	for {
 		select {
-		case err = <-s.Consumer.Errors():
+		case err = <-s.c.Errors():
 			return nil, err
-		case msg = <-s.Consumer.Messages():
+		case msg = <-s.c.Messages():
 			wrapMsg = new(message.Message)
 			wrapMsg.MessageId = string(msg.Key)
 			wrapMsg.Body = make([]byte, len(msg.Value))
 			copy(wrapMsg.Body, msg.Value)
 			if len(msg.Headers) > 0 {
-				wrapMsg.Options = make(map[string]string)
-				// copy kafka headers to owner Options field
-				for _, v := range msg.Headers {
-					wrapMsg.Options[string(v.Key)] = string(v.Value)
+				if s.serverVersion.IsAtLeast(sarama.V0_11_0_0) {
+					wrapMsg.Options = make(map[string]string)
+					// copy kafka headers to owner Options field
+					for _, v := range msg.Headers {
+						wrapMsg.Options[string(v.Key)] = string(v.Value)
+					}
+					wrapMsg.Options["kafka-offset"] = fmt.Sprint(msg.Offset)
 				}
-				wrapMsg.Options["kafka-offset"] = fmt.Sprint(msg.Offset)
 			}
-			s.Consumer.MarkOffset(msg, "")
+			s.c.MarkOffset(msg, "")
 			return wrapMsg, nil
-		case ntf, more := <-s.Consumer.Notifications():
+		case ntf, more := <-s.c.Notifications():
 			if more {
-				// log.Printf("consumer rebalance: %#v", ntf)
 				_ = ntf
 				// TODO: do something?
 			}

@@ -2,10 +2,10 @@ package queue_kafka
 
 import (
 	"errors"
+
 	"github.com/Shopify/sarama"
 	"github.com/bsm/sarama-cluster"
 	"github.com/carltd/glib/queue"
-	"log"
 )
 
 var (
@@ -19,8 +19,6 @@ func (d *kafkaQueueDriver) OpenPublisher(addr string) (queue.Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("[kafka] url is %s", info.Servers)
-	log.Printf("[kafka] broker version is %s", info.BrokerVersion)
 
 	var cfg = sarama.NewConfig()
 	cfg.Version = info.BrokerVersion
@@ -33,7 +31,7 @@ func (d *kafkaQueueDriver) OpenPublisher(addr string) (queue.Publisher, error) {
 		return nil, err
 	}
 
-	return &kafkaProducer{Producer: client}, nil
+	return &kafkaProducer{p: client}, nil
 }
 
 func (d *kafkaQueueDriver) OpenConsumer(addr string) (queue.Consumer, error) {
@@ -41,8 +39,6 @@ func (d *kafkaQueueDriver) OpenConsumer(addr string) (queue.Consumer, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("[kafka] url is %s", info.Servers)
-	log.Printf("[kafka] broker version is %s", info.BrokerVersion)
 
 	cfg := cluster.NewConfig()
 	cfg.Consumer.Return.Errors = true

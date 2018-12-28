@@ -3,13 +3,14 @@ package queue_kafka
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/Shopify/sarama"
 	"github.com/carltd/glib/queue/util"
-	"strings"
 )
 
 type dialInfo struct {
-	// Address holds the addresses for the server.
+	// Servers holds the addresses for the server.
 	Servers []string
 
 	BrokerVersion sarama.KafkaVersion
@@ -40,5 +41,6 @@ func parseURL(url string) (*dialInfo, error) {
 		Servers:       strings.Split(strings.TrimPrefix(opt.Addr, "kafka://"), ","),
 		BrokerVersion: bVersion,
 	}
+
 	return &info, nil
 }
