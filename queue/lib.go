@@ -25,6 +25,7 @@ type Publisher interface {
 
 type Subscriber interface {
 	NextMessage(timeout time.Duration) (*message.Message, error)
+	io.Closer
 }
 
 type baseConsumer interface {
@@ -47,7 +48,8 @@ type Conn interface {
 }
 
 type driver interface {
-	Open(addr string) (Conn, error)
+	OpenPublisher(addr string) (Publisher, error)
+	OpenConsumer(addr string) (Consumer, error)
 }
 
 var (
@@ -92,7 +94,7 @@ func NewPublisher(driverName, queueAddrs string) (Publisher, error) {
 		return nil, fmt.Errorf("queue: unknown driver %q (forgotten import?)", driverName)
 	}
 
-	return d.Open(queueAddrs)
+	return d.OpenPublisher(queueAddrs)
 }
 
 func NewConsumer(driverName, queueAddrs string) (Consumer, error) {
@@ -104,5 +106,5 @@ func NewConsumer(driverName, queueAddrs string) (Consumer, error) {
 		return nil, fmt.Errorf("queue: unknown driver %q (forgotten import?)", driverName)
 	}
 
-	return d.Open(queueAddrs)
+	return d.OpenConsumer(queueAddrs)
 }
