@@ -7,19 +7,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/carltd/glib/queue/message"
 	"github.com/golang/protobuf/proto"
+
+	"github.com/carltd/glib/queue/message"
 )
 
-type basePublisher interface {
+type Publisher interface {
 	// Unicast mode
 	Enqueue(subject string, msg *message.Message) error
 	// Broadcast mode
 	Publish(subject string, msg *message.Message) error
-}
-
-type Publisher interface {
-	basePublisher
 	io.Closer
 }
 
@@ -28,22 +25,11 @@ type Subscriber interface {
 	io.Closer
 }
 
-type baseConsumer interface {
+type Consumer interface {
 	// Unicast mode
 	Dequeue(subject, group string, timeout time.Duration, msg proto.Message) (*message.Meta, error)
 	// Broadcast mode
 	Subscribe(subject, group string) (Subscriber, error)
-}
-
-type Consumer interface {
-	baseConsumer
-	io.Closer
-}
-
-type Conn interface {
-	Ping() error
-	basePublisher
-	baseConsumer
 	io.Closer
 }
 

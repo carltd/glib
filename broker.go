@@ -34,17 +34,11 @@ func runBrokerManager(opts ...*brokerConfig) error {
 				if err != nil {
 					return fmt.Errorf("glib: broker create publisher (%s) err: %v", opt.Alias, err)
 				}
-				if err = q.(queue.Conn).Ping(); err != nil {
-					return fmt.Errorf("glib: broker resource (%s) err: %v", opt.Alias, err)
-				}
 				publishers.Store(opt.Alias, q)
 			case BrokerTypeConsumer:
 				q, err := queue.NewConsumer(opt.Driver, opt.Dsn)
 				if err != nil {
 					return fmt.Errorf("glib: broker create consumer (%s) err: %v", opt.Alias, err)
-				}
-				if err = q.(queue.Conn).Ping(); err != nil {
-					return fmt.Errorf("glib: broker resource (%s) err: %v", opt.Alias, err)
 				}
 				consumers.Store(opt.Alias, q)
 			default:
@@ -58,11 +52,11 @@ func runBrokerManager(opts ...*brokerConfig) error {
 
 func closeBroker() {
 	publishers.Range(func(key, value interface{}) bool {
-		value.(queue.Publisher).Close()
+		_ = value.(queue.Publisher).Close()
 		return true
 	})
 	consumers.Range(func(key, value interface{}) bool {
-		value.(queue.Consumer).Close()
+		_ = value.(queue.Consumer).Close()
 		return true
 	})
 }
