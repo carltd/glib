@@ -16,7 +16,7 @@ type RCache struct {
 func NewRedisCache(config *internal.CacheConfig) internal.Cacher {
 	c := &RCache{}
 
-	opt, err := parseRedisDSN(config.Dsn)
+	opt, err := internal.ParseRedisDSN(config.Dsn)
 	if err != nil {
 		panic(err)
 	}
