@@ -52,7 +52,7 @@ func (d *redisQueueConn) peekAvailableConn() (c redis.Conn, err error) {
 	for {
 		c = d.cs.Get()
 		if err = c.Err(); err != nil {
-			c.Close()
+			_ = c.Close()
 			limit--
 			if limit == 0 {
 				return nil, err
@@ -69,7 +69,7 @@ func (d *redisQueueConn) Ping() error {
 		return err
 	}
 	_, err = c.Do("PING")
-	c.Close()
+	_ = c.Close()
 	return err
 }
 
@@ -84,10 +84,10 @@ func (d *redisQueueConn) Publish(subject string, msg *message.Message) error {
 	if err != nil {
 		return err
 	}
-	c.Send("PUBLISH", subject, buf)
-	c.Flush()
+	_ = c.Send("PUBLISH", subject, buf)
+	_ = c.Flush()
 	err = c.Err()
-	c.Close()
+	_ = c.Close()
 	return err
 }
 
@@ -113,13 +113,13 @@ func (d *redisQueueConn) Enqueue(subject string, msg *message.Message) error {
 
 	buf, err := proto.Marshal(msg)
 	if err != nil {
-		c.Close()
+		_ = c.Close()
 		return err
 	}
-	c.Send("LPUSH", subject, buf)
-	c.Flush()
+	_ = c.Send("LPUSH", subject, buf)
+	_ = c.Flush()
 	err = c.Err()
-	c.Close()
+	_ = c.Close()
 	return err
 }
 
@@ -130,10 +130,10 @@ func (d *redisQueueConn) Dequeue(subject, group string, timeout time.Duration, d
 	}
 	buf, err := redis.ByteSlices(c.Do("BRPOP", subject, int(timeout.Nanoseconds()/int64(time.Second))))
 	if err != nil {
-		c.Close()
+		_ = c.Close()
 		return nil, err
 	}
-	c.Close()
+	_ = c.Close()
 
 	meta := &message.Meta{}
 	ret := &message.Message{}

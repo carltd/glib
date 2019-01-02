@@ -1,9 +1,10 @@
 package queue_redis
 
 import (
-	"github.com/carltd/glib/internal"
+	"fmt"
 	"time"
 
+	"github.com/carltd/glib/internal"
 	"github.com/carltd/glib/queue"
 	"github.com/garyburd/redigo/redis"
 )
@@ -30,7 +31,7 @@ func (d *redisQueueDriver) OpenConsumer(addr string) (queue.Consumer, error) {
 	return d.open(addr)
 }
 
-func (d *redisQueueDriver) open(addr string) (queue.Conn, error) {
+func (d *redisQueueDriver) open(addr string) (*redisQueueConn, error) {
 	info, err := internal.ParseRedisDSN(addr)
 	if err != nil {
 		return nil, err
@@ -64,6 +65,10 @@ func (d *redisQueueDriver) open(addr string) (queue.Conn, error) {
 			IdleTimeout: info.IdleTimeout,
 			Wait:        true,
 		},
+	}
+
+	if err = c.Ping(); err != nil {
+		return nil, fmt.Errorf("can't resolve %v", err)
 	}
 	return c, nil
 }
