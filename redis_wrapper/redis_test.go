@@ -311,6 +311,10 @@ func TestRedisWrapper_HashIncrByFloat(t *testing.T) {
 	if !floatEqual(n, 1.1) {
 		t.Errorf("HashIncrByFloat want %f got %f", 1.1, n)
 	}
+
+	if _, err = c.Delete(key); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestRedisWrapper_HashMemberSet_and_HashMemberGet(t *testing.T) {
@@ -380,5 +384,51 @@ func TestRedisWrapper_HashMemberSet_and_HashMemberGet(t *testing.T) {
 				t.Errorf(" k4 want %v, got %v", v, k4)
 			}
 		}
+	}
+}
+
+func TestRedisWrapper_Set(t *testing.T) {
+	var (
+		n      int
+		exists bool
+		key    = "set_test_add"
+		items  = []string{"item1", "item2", "item3"}
+	)
+
+	c, err := redis_wrapper.Open(dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer c.Close()
+
+	if _, err = c.Delete(key); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = c.SetAdd(key, items...); err != nil {
+		t.Fatal(err)
+	}
+
+	if n, err = c.SetLen(key); err != nil {
+		t.Fatal(err)
+	}
+	if n != len(items) {
+		t.Errorf("scard want %d, got %d", len(items), n)
+	}
+
+	if err = c.SetRemove(key, items[0]); err != nil {
+		t.Fatal(err)
+	}
+
+	if exists, err = c.SetIsMember(key, items[0]); err != nil {
+		t.Fatal(err)
+	}
+	if exists {
+		t.Error("sismember want false, got true")
+	}
+
+	if _, err = c.Delete(key); err != nil {
+		t.Fatal(err)
 	}
 }

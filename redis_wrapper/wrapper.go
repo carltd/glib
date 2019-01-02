@@ -76,21 +76,28 @@ type geoWrapper interface {
 }
 
 type setWrapper interface {
-	SetAdd()
-	SCARD()
-	SDIFF()
-	SDIFFSTORE()
-	SINTER()
-	SINTERSTORE()
-	SISMEMBER()
-	SMEMBERS()
-	SMOVE()
-	SPOP()
-	SRANDMEMBER()
-	SREM()
-	SUNION()
-	SUNIONSTORE()
-	SSCAN()
+	// Add one or more members to a set
+	SetAdd(key string, items ...string) error
+
+	// Get the number of members in a set
+	SetLen(key string) (int, error)
+	// SDIFF()
+	// SDIFFSTORE()
+	// SINTER()
+	// SINTERSTORE()
+
+	// Determine if a given value is a member of a set
+	SetIsMember(key, item string) (bool, error)
+	// SMEMBERS()
+	// SMOVE()
+	// SPOP()
+	// SRANDMEMBER()
+
+	//Remove one or more members from a set
+	SetRemove(key string, items ...string) error
+	// SUNION()
+	// SUNIONSTORE()
+	// SSCAN()
 }
 
 type sortSetWrapper interface {
@@ -152,11 +159,16 @@ type scriptWrapper interface {
 	ScriptEval(shaValue string, param RedisScriptParam) (interface{}, error)
 }
 
+type keyWrapper interface {
+	Delete(key ...string) (int64, error)
+}
+
 type RedisWrapper interface {
 	io.Closer
 	hashWrapper
 	geoWrapper
-	// TODO setWrapper
+	setWrapper
+	keyWrapper
 	// TODO sortSetWrapper
 	// TODO stringWrapper
 	// TODO scriptWrapper
