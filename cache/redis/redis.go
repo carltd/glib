@@ -2,6 +2,8 @@ package redis
 
 import (
 	"encoding/json"
+	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -30,12 +32,16 @@ func NewRedisCache(config *internal.CacheConfig) internal.Cacher {
 		MaxActive:   opt.MaxActive,
 		IdleTimeout: opt.IdleTimeout * time.Second,
 		Dial: func() (redis.Conn, error) {
-			return redis.DialURL(
+			var conn, err = redis.DialURL(
 				opt.Url,
 				redis.DialConnectTimeout(opt.ConnectTimeout),
 				redis.DialReadTimeout(opt.ReadTimeout),
 				redis.DialWriteTimeout(opt.WriteTimeout),
 			)
+			if opt.Debug {
+				conn = redis.NewLoggingConn(conn, log.New(os.Stdout, "", log.LstdFlags), "redis")
+			}
+			return conn, err
 		},
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 			if time.Since(t) < config.TTL*time.Second {

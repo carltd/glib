@@ -10,6 +10,7 @@ type dsnInfo struct {
 	// Address holds the addresses for the server.
 	Url string
 
+	Debug          bool
 	TTL            time.Duration
 	ConnectTimeout time.Duration
 	ReadTimeout    time.Duration
@@ -29,6 +30,7 @@ func ParseRedisDSN(url string) (*dsnInfo, error) {
 
 	var (
 		maxIdle, maxActive, connectTimeout, readTimeout, writeTimeout, idleTimeout, ttl int
+		debug                                                                           bool
 	)
 	for k, v := range opt.Options {
 		switch k {
@@ -60,6 +62,10 @@ func ParseRedisDSN(url string) (*dsnInfo, error) {
 			if ttl, err = strconv.Atoi(v); err != nil {
 				return nil, errors.New("bad value for ttl: " + v)
 			}
+		case "debug":
+			if debug, err = strconv.ParseBool(v); err != nil {
+				debug = false
+			}
 		default:
 			return nil, errors.New("unsupported connection URL option: " + k + "=" + v)
 		}
@@ -81,6 +87,7 @@ func ParseRedisDSN(url string) (*dsnInfo, error) {
 
 	info := dsnInfo{
 		Url:            opt.Addr,
+		Debug:          debug,
 		MaxIdle:        maxIdle,
 		MaxActive:      maxActive,
 		TTL:            time.Duration(ttl) * time.Millisecond,

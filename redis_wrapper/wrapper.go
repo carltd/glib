@@ -2,6 +2,8 @@ package redis_wrapper
 
 import (
 	"io"
+	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -197,12 +199,16 @@ func Open(dsn string) (RedisWrapper, error) {
 		MaxActive:   opt.MaxActive,
 		IdleTimeout: opt.IdleTimeout,
 		Dial: func() (redis.Conn, error) {
-			return redis.DialURL(
+			var conn, err = redis.DialURL(
 				opt.Url,
 				redis.DialConnectTimeout(opt.ConnectTimeout),
 				redis.DialReadTimeout(opt.ReadTimeout),
 				redis.DialWriteTimeout(opt.WriteTimeout),
 			)
+			if opt.Debug {
+				conn = redis.NewLoggingConn(conn, log.New(os.Stdout, "", log.LstdFlags), "redis")
+			}
+			return conn, err
 		},
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 			if time.Since(t) < opt.TTL {

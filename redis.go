@@ -39,7 +39,7 @@ func runRedisManger(ctx context.Context, opts ...*redisConfig) error {
 }
 
 func closeRedis() {
-	dbs.Range(func(key, value interface{}) bool {
+	rediss.Range(func(key, value interface{}) bool {
 		err := value.(redis_wrapper.RedisWrapper).Close()
 		return err != nil
 	})
