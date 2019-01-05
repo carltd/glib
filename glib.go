@@ -11,8 +11,10 @@ type featureEnabledOptions struct {
 	Broker bool `json:"broker"`
 	Mgo    bool `json:"mgo"`
 	Tracer bool `json:"tracer"`
+	Redis  bool `json:"redis"`
 }
 
+// All keys only placed in the root directory
 const (
 	glibConfigEnablesKey = "glib-supports"
 	glibConfigDb         = "glib-db"
@@ -20,11 +22,12 @@ const (
 	glibConfigMgo        = "glib-mgo"
 	glibConfigTracer     = "glib-tracer"
 	glibConfigBroker     = "glib-broker"
+	glibConfigRedis      = "glib-redis"
 )
 
 var (
 	ctx, stop         = context.WithCancel(context.Background())
-	defEnabledOptions = &featureEnabledOptions{false, false, false, false, false}
+	defEnabledOptions = &featureEnabledOptions{false, false, false, false, false, false}
 	confCenter        *configCenter
 )
 
@@ -41,7 +44,7 @@ func Init(opts ...option) error {
 	if err = confCenter.Load(glibConfigEnablesKey, defEnabledOptions); err != nil {
 		return release(err)
 	}
-	
+
 	// init database
 	if defEnabledOptions.Db {
 		dbConfig := make([]*dbConfig, 0)
@@ -89,6 +92,16 @@ func Init(opts ...option) error {
 		}
 	}
 
+	if defEnabledOptions.Redis {
+		rdsConfig := make([]*redisConfig, 0)
+		if err = confCenter.Load(glibConfigRedis, &rdsConfig); err != nil {
+			return release(err)
+		}
+		if err = runRedisManger(ctx, rdsConfig...); err != nil {
+			return release(err)
+		}
+	}
+
 	// init tracer
 	if defEnabledOptions.Tracer {
 		tCfg := tracerConfig{}
@@ -114,6 +127,7 @@ func release(err error) error {
 	closeMgo()
 	closeTracer()
 	closeBroker()
+	closeRedis()
 	return err
 }
 

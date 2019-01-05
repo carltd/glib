@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/carltd/glib/internal"
 	"github.com/carltd/glib/queue"
 	"github.com/garyburd/redigo/redis"
 )
@@ -31,7 +32,7 @@ func (d *redisQueueDriver) OpenConsumer(addr string) (queue.Consumer, error) {
 }
 
 func (d *redisQueueDriver) open(addr string) (*redisQueueConn, error) {
-	info, err := parseURL(addr)
+	info, err := internal.ParseRedisDSN(addr)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +54,7 @@ func (d *redisQueueDriver) open(addr string) (*redisQueueConn, error) {
 			},
 
 			TestOnBorrow: func(c redis.Conn, t time.Time) error {
-				if time.Since(t) < 3*time.Second {
+				if time.Since(t) < info.TTL {
 					return nil
 				}
 				_, err := c.Do("PING")
