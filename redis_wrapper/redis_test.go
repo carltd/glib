@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/carltd/glib/redis_wrapper"
 	"github.com/garyburd/redigo/redis"
@@ -20,6 +21,8 @@ type TestHashItem struct {
 	BoolKey  bool    `redis:"e"`
 	BytesKey []byte  `redis:"f"`
 	X        string
+	Y        time.Duration `redis:"y"`
+	Z        time.Time     `redis:"z"`
 }
 
 func floatEqual(a, b float64) bool {
@@ -181,7 +184,7 @@ func TestRedisWrapper_HashSet(t *testing.T) {
 
 	defer c.Close()
 
-	var h = &TestHashItem{StrKey: "some data", UintKey: uint16(rand.Int()), BoolKey: true}
+	var h = &TestHashItem{StrKey: "some data", UintKey: uint16(rand.Int()), BoolKey: true, Z: time.Now()}
 
 	if err = c.HashSet(key, h, true); err != nil {
 		t.Error(err)
@@ -191,7 +194,7 @@ func TestRedisWrapper_HashSet(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if len(ks) != 3 {
+	if len(ks) != 4 {
 		t.Errorf("want 3 field got %v", len(ks))
 	}
 
@@ -199,7 +202,7 @@ func TestRedisWrapper_HashSet(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if n != 3 {
+	if n != 4 {
 		t.Errorf("want 3 field got %v", n)
 	}
 }
@@ -220,6 +223,8 @@ func TestRedisWrapper_HashGet(t *testing.T) {
 		StrKey:   "some thing",
 		BoolKey:  true,
 		BytesKey: []byte{9, 8, 7, 6, 5, 4, 3, 2, 1},
+		Y:        time.Second * 5,
+		Z:        time.Now(),
 	}
 
 	if err = c.HashSet(key, t1, true); err != nil {
@@ -230,6 +235,11 @@ func TestRedisWrapper_HashGet(t *testing.T) {
 	if err = c.HashGet(key, &t2); err != nil {
 		t.Error(err)
 	}
+
+	if t1.Z.Unix() != t2.Z.Unix() {
+		t.Log("t1'Z not equal t2'Z")
+	}
+	t1.Z = t2.Z
 
 	if !reflect.DeepEqual(t1, t2) {
 		t.Logf("t1 is : %#v", t1)

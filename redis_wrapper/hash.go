@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -38,6 +39,8 @@ func (w *redisWrapper) HashSet(key string, v interface{}, override bool) error {
 		typV         = valV.Type()
 		redisHashKey string
 		err          error
+		t time.Time
+		ok bool
 	)
 
 	switch typV.Kind() {
@@ -80,6 +83,10 @@ func (w *redisWrapper) HashSet(key string, v interface{}, override bool) error {
 		case reflect.Slice:
 			if len(valV.Field(i).Bytes()) > 0 {
 				args = args.Add(redisHashKey, valV.Field(i).Bytes())
+			}
+		case reflect.Struct:
+			if t,ok = valV.Field(i).Interface().(time.Time);ok {
+				args = args.Add(redisHashKey, t.Format(time.RFC3339))
 			}
 		}
 	}
@@ -177,6 +184,11 @@ func (w *redisWrapper) HashGet(key string, v interface{}) error {
 			case reflect.Bool:
 				ok, _ = strconv.ParseBool(val)
 				valV.Field(i).SetBool(ok)
+			case reflect.Struct:
+				if _,ok = valV.Field(i).Interface().(time.Time);ok {
+					t,_ := time.Parse(time.RFC3339, val)
+					valV.Field(i).Set(reflect.ValueOf(t))
+				}
 			}
 		}
 	}
