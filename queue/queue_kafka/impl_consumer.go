@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Jedeft/glib/queue/ierr"
 	"github.com/Shopify/sarama"
 	"github.com/bsm/sarama-cluster"
 	"github.com/carltd/glib/queue"
+	"github.com/carltd/glib/queue/ierr"
 	"github.com/carltd/glib/queue/message"
 	"github.com/golang/protobuf/proto"
 )
