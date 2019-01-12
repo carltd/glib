@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Jedeft/glib/queue/ierr"
 	"github.com/Shopify/sarama"
 	"github.com/bsm/sarama-cluster"
 	"github.com/carltd/glib/queue"
@@ -52,7 +53,7 @@ func (s *kafkaSubscriber) NextMessage(timeout time.Duration) (*message.Message, 
 	for {
 		select {
 		case <-time.After(timeout):
-			return nil, ErrNextMessageTimeOut
+			return nil, ierr.ErrNextMessageTimeOut
 		case err = <-s.c.Errors():
 			return nil, err
 		case msg = <-s.c.Messages():

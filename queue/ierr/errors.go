@@ -1,4 +1,4 @@
-package queue_kafka
+package ierr
 
 import "errors"
 
