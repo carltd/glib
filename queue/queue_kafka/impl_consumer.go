@@ -1,13 +1,13 @@
 package queue_kafka
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/bsm/sarama-cluster"
 	"github.com/carltd/glib/queue"
+	"github.com/carltd/glib/queue/ierr"
 	"github.com/carltd/glib/queue/message"
 	"github.com/golang/protobuf/proto"
 )
@@ -53,7 +53,7 @@ func (s *kafkaSubscriber) NextMessage(timeout time.Duration) (*message.Message, 
 	for {
 		select {
 		case <-time.After(timeout):
-			return nil, errors.New("timeout")
+			return nil, ierr.ErrNextMessageTimeOut
 		case err = <-s.c.Errors():
 			return nil, err
 		case msg = <-s.c.Messages():
