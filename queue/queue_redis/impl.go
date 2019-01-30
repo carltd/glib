@@ -74,7 +74,9 @@ func (d *redisQueueConn) Ping() error {
 }
 
 func (d *redisQueueConn) Publish(subject string, msg *message.Message) error {
-	msg.MessageId = util.GenMsgID()
+	if msg.MessageId == "" {
+		msg.MessageId = util.GenMsgID()
+	}
 	c, err := d.peekAvailableConn()
 	if err != nil {
 		return err

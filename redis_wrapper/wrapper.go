@@ -83,46 +83,120 @@ type setWrapper interface {
 
 	// Get the number of members in a set
 	SetLen(key string) (int, error)
-	// SDIFF()
-	// SDIFFSTORE()
-	// SINTER()
-	// SINTERSTORE()
+
+	// Subtract multiple sets
+	SetDiff(key ...string) ([]string, error)
+
+	// Subtract multiple sets and store the resulting set in a key
+	SetDiffStore(target string, key ...string) (uint, error)
+
+	// Intersect multiple sets
+	SetIntersect(key ...string) ([]string, error)
+
+	// Intersect multiple sets and store the resulting set in a key
+	SetIntersectStore(target string, key ...string) (uint, error)
 
 	// Determine if a given value is a member of a set
 	SetIsMember(key, item string) (bool, error)
-	// SMEMBERS()
-	// SMOVE()
-	// SPOP()
-	// SRANDMEMBER()
 
-	//Remove one or more members from a set
+	// Get all the members in a set
+	SetMembers(key string) ([]string, error)
+
+	// Move a member from one set to another
+	// true - if the element is moved.
+	// false - if the element is not a member of source and no operation was performed.
+	SetMoveMember(src, target, item string) (bool, error)
+
+	// Remove and return one or multiple random members from a set
+	SetPopMember(key string, count uint) ([]string, error)
+
+	// Get one or multiple random members from a set
+	SetRandMember(key string, count uint) ([]string, error)
+
+	// Remove one or more members from a set
 	SetRemove(key string, items ...string) error
-	// SUNION()
-	// SUNIONSTORE()
-	// SSCAN()
+
+	// Add multiple sets
+	SetUnion(key ...string) ([]string, error)
+
+	// Add multiple sets and store the resulting set in a key
+	SetUnionStore(target string, key ...string) (uint, error)
+
+	// Incrementally iterate Set elements
+	SetScan() // TODO: 需要实现
+}
+
+// SortSet item type
+type SortSetItem struct {
+	Member string
+	// used by member score,
+	// @note - the value must be int64 or float64 when used to zadd
+	// @note - the value will be string when returned
+	Score interface{}
+}
+
+type zrangeOption struct {
+	limit, offset int
+	scores        bool
+}
+
+type SortSetRangeOption func(opt *zrangeOption)
+
+func WithZRange(limit, offset int) SortSetRangeOption {
+	return func(o *zrangeOption) {
+		o.limit = limit
+		o.offset = offset
+	}
+}
+
+func WithZScores() SortSetRangeOption {
+	return func(o *zrangeOption) {
+		o.scores = true
+	}
 }
 
 type sortSetWrapper interface {
-	ZADD()
-	ZCARD()
-	ZCOUNT()
-	ZINCRBY()
-	ZRANGE()
-	ZRANGEBYSCORE()
-	ZRANK()
-	ZREM()
-	ZREMRANGEBYRANK()
-	ZREMRANGEBYSCORE()
-	ZREVRANGE()
-	ZREVRANGEBYSCORE()
-	ZREVRANK()
-	ZSCORE()
-	ZUNIONSTORE()
-	ZINTERSTORE()
-	ZSCAN()
-	ZRANGEBYLEX()
-	ZLEXCOUNT()
-	ZREMRANGEBYLEX()
+	// Add one or more members to a sorted set, or update its score if it already exists
+	SortSetAdd(key string, items ...*SortSetItem) error
+
+	// Get the number of members in a sorted set
+	SortSetLen(key string) (int, error)
+
+	// Remove one or more members from a sorted set
+	SortSetRemove(key string, names ...string) error
+
+	// Count the members in a sorted set with scores within the given values
+	SortSetCount(key string, minScore, maxScore uint) (uint, error)
+
+	// Increment the score of a member in a sorted set
+	SortSetIncrBy(key string, item string, val int) (string, error)
+
+	// Return a range of members in a sorted set, by index
+	SortSetRange(key string, minIndex, maxIndex uint) ([]*SortSetItem, error)
+
+	// Return a range of members in a sorted set, by score
+	SortSetRangeByScore(key string, minScore, maxScore string, opts ...SortSetRangeOption) ([]*SortSetItem, error)
+
+	// Determine the index of a member in a sorted set
+	SortSetRank(key, name string) (uint, error)
+
+	// Remove all members in a sorted set within the given indexes
+	SortSetRemoveRangeByRank(key string, minRank, maxRank int) (uint, error)
+
+	// Remove all members in a sorted set within the given scores
+	SortSetRemoveRangeByScore(key, minScore, maxScore string) (uint, error)
+
+	//ZREVRANGE()
+	//ZREVRANGEBYSCORE()
+	//ZREVRANK()
+
+	//ZSCORE()
+	//ZUNIONSTORE()
+	//ZINTERSTORE()
+	//ZSCAN()
+	//ZRANGEBYLEX()
+	//ZLEXCOUNT()
+	//ZREMRANGEBYLEX()
 }
 
 type stringWrapper interface {
@@ -152,13 +226,19 @@ type stringWrapper interface {
 }
 
 type RedisScriptParam struct {
-	Keys []interface{}
+	Keys []string
 	Args []interface{}
 }
 
 type scriptWrapper interface {
+	// Check existence of scripts in the script cache.
 	ScriptIsExists(shaValue string) (bool, error)
+
+	// Execute a Lua script server side
 	ScriptEval(shaValue string, param RedisScriptParam) (interface{}, error)
+
+	// Load the specified Lua script into the script cache.
+	ScriptLoad(script string) (string, error)
 }
 
 type keyWrapper interface {
@@ -171,9 +251,9 @@ type RedisWrapper interface {
 	geoWrapper
 	setWrapper
 	keyWrapper
-	// TODO sortSetWrapper
+	sortSetWrapper
 	// TODO stringWrapper
-	// TODO scriptWrapper
+	scriptWrapper
 }
 
 type redisWrapper struct {
