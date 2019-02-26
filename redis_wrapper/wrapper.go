@@ -254,10 +254,17 @@ type RedisWrapper interface {
 	sortSetWrapper
 	// TODO stringWrapper
 	scriptWrapper
+
+	// The returned `redis.Conn` should be closed by manual
+	Raw() redis.Conn
 }
 
 type redisWrapper struct {
 	pool *redis.Pool
+}
+
+func (w *redisWrapper) Raw() redis.Conn {
+	return w.pool.Get()
 }
 
 func (w *redisWrapper) Close() error {
