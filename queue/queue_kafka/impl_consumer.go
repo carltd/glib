@@ -7,7 +7,6 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/bsm/sarama-cluster"
 	"github.com/carltd/glib/queue"
-	"github.com/carltd/glib/queue/ierr"
 	"github.com/carltd/glib/queue/message"
 	"github.com/golang/protobuf/proto"
 )
@@ -53,7 +52,7 @@ func (s *kafkaSubscriber) NextMessage(timeout time.Duration) (*message.Message, 
 	for {
 		select {
 		case <-time.After(timeout):
-			return nil, ierr.ErrNextMessageTimeOut
+			return nil, queue.ErrTimeout
 		case err = <-s.c.Errors():
 			return nil, err
 		case msg = <-s.c.Messages():

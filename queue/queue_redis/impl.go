@@ -2,6 +2,7 @@ package queue_redis
 
 import (
 	"errors"
+	"net"
 	"time"
 
 	"github.com/carltd/glib/queue"
@@ -22,8 +23,9 @@ type redisSubscriber struct {
 }
 
 func (s *redisSubscriber) NextMessage(timeout time.Duration) (*message.Message, error) {
-	for {
-		switch n := s.pbConn.Receive().(type) {
+	var start = time.Now()
+	for cost := time.Duration(0); cost < timeout; cost = time.Now().Sub(start) {
+		switch n := s.pbConn.ReceiveWithTimeout(timeout - cost).(type) {
 		case redis.Message:
 			ret := &message.Message{}
 			err := proto.Unmarshal(n.Data, ret)
@@ -33,9 +35,13 @@ func (s *redisSubscriber) NextMessage(timeout time.Duration) (*message.Message, 
 				return nil, ErrSubFail
 			}
 		case error:
+			if e, ok := n.(net.Error); ok && e.Timeout() {
+				return nil, queue.ErrTimeout
+			}
 			return nil, n
 		}
 	}
+	return nil, queue.ErrTimeout
 }
 
 func (s *redisSubscriber) Close() error {
@@ -130,7 +136,7 @@ func (d *redisQueueConn) Dequeue(subject, group string, timeout time.Duration, d
 	if err != nil {
 		return nil, err
 	}
-	buf, err := redis.ByteSlices(c.Do("BRPOP", subject, int(timeout.Nanoseconds()/int64(time.Second))))
+	buf, err := redis.ByteSlices(c.Do("BRPOP", subject, timeout.Seconds()))
 	if err != nil {
 		_ = c.Close()
 		return nil, err

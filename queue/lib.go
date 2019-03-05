@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/carltd/glib/queue/message"
 )
+
+var ErrTimeout = errors.New("consumer get message timeout")
 
 type Publisher interface {
 	// Unicast mode

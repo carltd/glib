@@ -1,6 +1,7 @@
 package queue_redis_test
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -13,17 +14,9 @@ import (
 
 const (
 	driverName  = "redis"
-	redisDSN    = "redis://:123456@127.0.0.1:6379/0?maxIdle=10&maxActive=10&idleTimeout=3"
+	redisDSN    = "redis://:123456@127.0.0.1:16379/1?maxIdle=10&maxActive=10&idleTimeout=3"
 	testSubject = "testSubject"
 )
-
-func newSubscriber() (queue.Subscriber, error) {
-	qc, err := queue.NewConsumer(driverName, redisDSN)
-	if err != nil {
-		return nil, err
-	}
-	return qc.Subscribe(testSubject, "test")
-}
 
 func TestNewPublisher(t *testing.T) {
 
@@ -37,43 +30,51 @@ func TestNewPublisher(t *testing.T) {
 		Body:     util.MustMessageBody(want),
 	}
 
-	ch := make(chan struct{})
+	var canPublish = make(chan bool)
+
 	go func() {
-		sub, err := newSubscriber()
+		qc, err := queue.NewConsumer(driverName, redisDSN)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
-		ch <- struct{}{}
-		m, err := sub.NextMessage(10 * time.Second)
+
+		sub, err := qc.Subscribe(testSubject, "test")
 		if err != nil {
-			t.Error(err)
-		}
-		got := testdata.Something{}
-		if err := util.FromMessageBody(m.Body, &got); err != nil {
-			t.Error(err)
-		}
-		if msg.MessageId != m.MessageId {
-			t.Errorf("message id: want %#x, got %#x", msg.MessageId, m.MessageId)
+			t.Fatal(err)
 		}
 
-		if want.Name != got.Name {
-			t.Errorf("name: want %v, got %v", want.Name, got.Name)
+		defer sub.Close()
+		canPublish <- true
+		defer close(canPublish)
+
+		m, err := sub.NextMessage(3 * time.Second)
+		if err != nil {
+			t.Fatal(err)
 		}
 
-		if want.Age != got.Age {
-			t.Errorf("Age: want %v, got %v", want.Age, got.Age)
+		got := &testdata.Something{}
+		if err := util.FromMessageBody(m.Body, got); err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(want, got) {
+			t.Errorf("message=%#v, want=%#v", got, want)
 		}
 
-		ch <- struct{}{}
+		if _, err = sub.NextMessage(time.Second); err != queue.ErrTimeout {
+			t.Errorf("want (%v), got (%v)", queue.ErrTimeout, err)
+		}
 	}()
 
-	<-ch
-	qc, _ := queue.NewPublisher(driverName, redisDSN)
-	if err := qc.Publish(testSubject, msg); err != nil {
+	qp, err := queue.NewPublisher(driverName, redisDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer qp.Close()
+	<-canPublish
+	if err := qp.Publish(testSubject, msg); err != nil {
 		t.Error(err)
 	}
-	qc.Close()
-	<-ch
+	<-canPublish
 }
 
 func TestDrivers(t *testing.T) {
@@ -87,9 +88,12 @@ func TestDrivers(t *testing.T) {
 }
 
 func TestRedisQueueConn_Enqueue(t *testing.T) {
-	qc, _ := queue.NewPublisher(driverName, redisDSN)
+	qp, err := queue.NewPublisher(driverName, redisDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	defer qc.Close()
+	defer qp.Close()
 	want := &testdata.Something{
 		Name: "something",
 		Age:  11,
@@ -99,26 +103,40 @@ func TestRedisQueueConn_Enqueue(t *testing.T) {
 		Priority: message.MsgPriority_PRIORITY0,
 		Body:     util.MustMessageBody(want),
 	}
-	if err := qc.Enqueue(testSubject, msg); err != nil {
+	if err := qp.Enqueue(testSubject, msg); err != nil {
 		t.Error(err)
 	}
 }
 
 func TestRedisQueueConn_Dequeue(t *testing.T) {
-
-	TestRedisQueueConn_Enqueue(t)
-
-	qc, _ := queue.NewConsumer(driverName, redisDSN)
-
-	defer qc.Close()
 	want := &testdata.Something{
 		Name: "something",
 		Age:  11,
 	}
+	msg := &message.Message{
+		Priority: message.MsgPriority_PRIORITY0,
+		Body:     util.MustMessageBody(want),
+	}
+
+	// enqueue a message at first
+	qp, err := queue.NewPublisher(driverName, redisDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer qp.Close()
+	if err = qp.Enqueue(testSubject, msg); err != nil {
+		t.Fatal(err)
+	}
+
+	// dequeue a message
+	qc, err := queue.NewConsumer(driverName, redisDSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer qc.Close()
 
 	got := testdata.Something{}
-	_, err := qc.Dequeue(testSubject, "test", 10*time.Second, &got)
-	if err != nil {
+	if _, err = qc.Dequeue(testSubject, "test", 10*time.Second, &got); err != nil {
 		t.Fatal(err)
 	}
 
