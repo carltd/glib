@@ -36,7 +36,7 @@ func Init(opts ...option) error {
 
 	var err error
 
-	confCenter, err = newConfigCenter(ctx, opts...)
+	confCenter, err = newConfigCenter(opts...)
 	if err != nil {
 		return err
 	}
