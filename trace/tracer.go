@@ -1,4 +1,4 @@
-package trace
+package gtrace
 
 import (
 	"context"
@@ -20,7 +20,6 @@ const (
 	tracePropagationField = "Tracer-Context"
 )
 
-var tc *zipkin.Tracer
 
 var (
 	// StatusCode is the RPC status code.
@@ -44,8 +43,9 @@ func (w *clientWrapper) Call(ctx context.Context, req client.Request, rsp interf
 		ctx,
 		fmt.Sprintf("rpc/client/%s/%s", req.Service(), req.Method()),
 	)
+
 	span.Tag(service, req.Service())
-	span.Tag(endpoint, req.Endpoint())
+	span.Tag(endpoint, req.Method())
 
 	defer func() {
 		if err != nil {

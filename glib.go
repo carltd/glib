@@ -125,7 +125,6 @@ func release(err error) error {
 	stop()
 	closeDb()
 	closeMgo()
-	closeTracer()
 	closeBroker()
 	closeRedis()
 	return err
