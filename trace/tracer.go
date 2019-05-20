@@ -30,7 +30,7 @@ var (
 	service = "rpc.service"
 
 	// Method is the service method called.
-	endpoint = "rpc.endpoint"
+	method = "rpc.method"
 )
 
 type clientWrapper struct {
@@ -45,7 +45,7 @@ func (w *clientWrapper) Call(ctx context.Context, req client.Request, rsp interf
 	)
 
 	span.Tag(service, req.Service())
-	span.Tag(endpoint, req.Method())
+	span.Tag(method, req.Method())
 
 	defer func() {
 		if err != nil {
@@ -56,7 +56,7 @@ func (w *clientWrapper) Call(ctx context.Context, req client.Request, rsp interf
 		span.Finish()
 	}()
 
-	// TODO: 注入上下文
+	// FIXME: need test
 	// ctx = injectTraceIntoCtx(cCtx, span)
 
 	err = w.Client.Call(cCtx, req, rsp, opts...)
@@ -70,7 +70,7 @@ func (w *clientWrapper) Publish(ctx context.Context, p client.Message, opts ...c
 		fmt.Sprintf("rpc/client/pub/%s", p.Topic()),
 	)
 	span.Tag(service, "pub")
-	span.Tag(endpoint, p.Topic())
+	span.Tag(method, p.Topic())
 
 	defer func() {
 		if err != nil {

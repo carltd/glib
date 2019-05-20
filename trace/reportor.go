@@ -1,6 +1,9 @@
 package gtrace
 
 import (
+	"log"
+	"os"
+
 	"github.com/openzipkin/zipkin-go"
 	"github.com/openzipkin/zipkin-go/reporter/http"
 )
@@ -11,23 +14,34 @@ var (
 	tc *zipkin.Tracer
 )
 
-func InitTracer(addr, serviceName, hostPort string) error {
-	ep, err := zipkin.NewEndpoint(serviceName, hostPort)
+type TracerConfig struct {
+	Address   string `json:"addr"`
+	SampleMod uint64 `json:"sample_mod"`
+
+	HostPort string `json:"-"`
+	SrvName  string `json:"-"`
+}
+
+func InitTracer(opt TracerConfig) error {
+	ep, err := zipkin.NewEndpoint(opt.SrvName, opt.HostPort)
 	if err != nil {
 		return err
 	}
 
-	if len(addr) == 0 {
-		addr = defaultTracerAddr
+	if len(opt.Address) == 0 {
+		opt.Address = defaultTracerAddr
 	}
 
-	var report = http.NewReporter(addr)
+	var report = http.NewReporter(
+		opt.Address,
+		http.Logger(log.New(os.Stdout, "", log.LstdFlags)),
+	)
 
 	// initialize the tracer
 	tc, err = zipkin.NewTracer(
 		report,
 		zipkin.WithLocalEndpoint(ep),
-		zipkin.WithSampler(zipkin.NewModuloSampler(1)), // always sampler
+		zipkin.WithSampler(zipkin.NewModuloSampler(opt.SampleMod)), // always sampler
 	)
 	return err
 }

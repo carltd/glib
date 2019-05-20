@@ -13,3 +13,5 @@ vendor/
 *.out
 
 .idea/
+testdata/
+glib_test.go
