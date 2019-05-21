@@ -1,9 +1,6 @@
 package gtrace
 
 import (
-	"log"
-	"os"
-
 	"github.com/openzipkin/zipkin-go"
 	"github.com/openzipkin/zipkin-go/reporter/http"
 )
@@ -32,10 +29,7 @@ func InitTracer(opt TracerConfig) error {
 		opt.Address = defaultTracerAddr
 	}
 
-	var report = http.NewReporter(
-		opt.Address,
-		http.Logger(log.New(os.Stdout, "", log.LstdFlags)),
-	)
+	var report = http.NewReporter(opt.Address)
 
 	// initialize the tracer
 	tc, err = zipkin.NewTracer(

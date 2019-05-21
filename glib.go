@@ -109,7 +109,8 @@ func Init(opts ...option) error {
 		if err = confCenter.Load(glibConfigTracer, &tCfg); err != nil {
 			return release(err)
 		}
-		tCfg.SrvName = confCenter.serviceDomain
+		tCfg.SrvName = confCenter.Options().ServiceDomain
+		tCfg.HostPort = confCenter.Options().RunAt
 		if err = gtrace.InitTracer(tCfg); err != nil {
 			return release(err)
 		}

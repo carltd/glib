@@ -35,8 +35,8 @@ func (o configObject) Scan(val interface{}) error { return json.Unmarshal(o, val
 func (o configObject) Bytes() []byte              { return o }
 
 type configCenter struct {
-	serviceDomain string
-	rawMap        map[string][]byte
+	opts   options
+	rawMap map[string][]byte
 }
 
 func newConfigCenter(opts ...option) (*configCenter, error) {
@@ -49,24 +49,23 @@ func newConfigCenter(opts ...option) (*configCenter, error) {
 
 func (cc *configCenter) Init(opts ...option) error {
 
-	opt := newOptions(opts...)
-	cc.serviceDomain = opt.ServiceDomain
+	cc.opts = newOptions(opts...)
 
 	cfg := api.DefaultConfig()
-	cfg.Address = opt.DiscoverAddr
+	cfg.Address = cc.opts.DiscoverAddr
 	client, err := api.NewClient(cfg)
 	if err != nil {
 		return err
 	}
 
-	kv, _, err := client.KV().List(opt.ServiceDomain, nil)
+	kv, _, err := client.KV().List(cc.opts.ServiceDomain, nil)
 	if err != nil {
 		return err
 	}
 
 	if kv != nil && len(kv) > 0 {
 		for _, v := range kv {
-			k := strings.TrimPrefix(strings.TrimPrefix(v.Key, opt.ServiceDomain), "/")
+			k := strings.TrimPrefix(strings.TrimPrefix(v.Key, cc.opts.ServiceDomain), "/")
 			cc.rawMap[k] = v.Value
 		}
 	}
@@ -85,7 +84,7 @@ func (cc *configCenter) Load(key string, v interface{}) error {
 	if val, ok := cc.rawMap[key]; ok {
 		return json.Unmarshal(val, v)
 	}
-	return fmt.Errorf("%s/%s not found", cc.serviceDomain, key)
+	return fmt.Errorf("%s/%s not found", cc.opts.ServiceDomain, key)
 }
 
 func (cc *configCenter) Raw(key string) ConfigObject {
@@ -93,4 +92,8 @@ func (cc *configCenter) Raw(key string) ConfigObject {
 		return configObject(val)
 	}
 	return configObject{}
+}
+
+func (cc *configCenter) Options() options {
+	return cc.opts
 }
