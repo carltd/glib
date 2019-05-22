@@ -54,7 +54,7 @@ func (w *clientWrapper) Call(ctx context.Context, req client.Request, rsp interf
 
 // Publish implements client.Client.Publish.
 func (w *clientWrapper) Publish(ctx context.Context, p client.Message, opts ...client.PublishOption) (err error) {
-	var sp, cCtx = tc.StartSpanFromContext(ctx, "rpc/client/pub/"+p.Topic())
+	var sp, cCtx = tc.StartSpanFromContext(ctx, "rpc/pub/"+p.Topic())
 
 	defer func() {
 		checkAndSetSpanTagError(sp, err)
@@ -134,11 +134,11 @@ func NewSubscriberWrapper() server.SubscriberWrapper {
 			if spanCtx != nil {
 				sp, ctx = tc.StartSpanFromContext(
 					ctx,
-					"rpc/server/sub/"+p.Topic(),
+					"rpc/sub/"+p.Topic(),
 					zipkin.Parent(*spanCtx),
 				)
 			} else {
-				sp = tc.StartSpan("rpc/server/sub/" + p.Topic())
+				sp = tc.StartSpan("rpc/sub/" + p.Topic())
 			}
 
 			defer func() {
