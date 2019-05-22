@@ -2,7 +2,8 @@ package gtrace
 
 import (
 	"context"
-	"fmt"
+	"strconv"
+
 	"github.com/openzipkin/zipkin-go"
 	"github.com/openzipkin/zipkin-go/model"
 
@@ -25,11 +26,12 @@ var (
 func checkAndSetSpanTagError(sp zipkin.Span, err error) {
 	if err != nil {
 		if e, ok := err.(*merr.Error); ok {
-			tagStatusCode.Set(sp, fmt.Sprint(e.Code))
+			tagStatusCode.Set(sp, strconv.FormatInt(int64(e.Code), 10))
 			zipkin.TagError.Set(sp, e.Detail)
 		} else {
 			zipkin.TagError.Set(sp, err.Error())
 		}
+
 	} else {
 		tagStatusCode.Set(sp, StatusOK)
 	}
