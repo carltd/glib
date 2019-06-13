@@ -304,6 +304,7 @@ func Open(dsn string) (RedisWrapper, error) {
 			_, err := c.Do("PING")
 			return err
 		},
+		Wait: true,
 	}
 	c := pool.Get()
 	if _, err = c.Do("PING"); err != nil {

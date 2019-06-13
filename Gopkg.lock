@@ -40,15 +40,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/go-log/log"
-  packages = [
-    ".",
-    "log"
-  ]
-  revision = "37e2e1f19306361e1fc152a1839f1236149cb4e4"
-  version = "v0.1.0"
-
-[[projects]]
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
   revision = "a0583e0143b1624142adab07e0e97fe106d99561"
