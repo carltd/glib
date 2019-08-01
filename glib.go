@@ -3,6 +3,7 @@ package glib
 import (
 	"context"
 	"github.com/carltd/glib/internal"
+	gtrace "github.com/carltd/glib/trace"
 )
 
 type featureEnabledOptions struct {
@@ -36,7 +37,7 @@ func Init(opts ...option) error {
 
 	var err error
 
-	confCenter, err = newConfigCenter(ctx, opts...)
+	confCenter, err = newConfigCenter(opts...)
 	if err != nil {
 		return err
 	}
@@ -104,11 +105,13 @@ func Init(opts ...option) error {
 
 	// init tracer
 	if defEnabledOptions.Tracer {
-		tCfg := tracerConfig{}
+		tCfg := gtrace.TracerConfig{}
 		if err = confCenter.Load(glibConfigTracer, &tCfg); err != nil {
 			return release(err)
 		}
-		if err = initTracer(tCfg); err != nil {
+		tCfg.SrvName = confCenter.Options().ServiceDomain
+		tCfg.HostPort = confCenter.Options().RunAt
+		if err = gtrace.InitTracer(tCfg); err != nil {
 			return release(err)
 		}
 	}
@@ -125,7 +128,6 @@ func release(err error) error {
 	stop()
 	closeDb()
 	closeMgo()
-	closeTracer()
 	closeBroker()
 	closeRedis()
 	return err

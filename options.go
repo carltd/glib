@@ -13,6 +13,9 @@ type options struct {
 	// non storage, eg: db, cache
 	NoStorage bool
 
+	// listen address for server
+	RunAt string
+
 	// Other options for implementations of the interface
 	// can be stored in a context
 	Context context.Context
@@ -31,6 +34,13 @@ func WithServiceDomain(domain string) option {
 func WithDiscoverAddr(addr string) option {
 	return func(o *options) {
 		o.DiscoverAddr = addr
+	}
+}
+
+// WithRunAt - set the server's worker address
+func WithRunAt(addr string) option {
+	return func(o *options) {
+		o.RunAt = addr
 	}
 }
 

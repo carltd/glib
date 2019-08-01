@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
-	"github.com/carltd/glib/internal"
+	. "github.com/carltd/glib/internal"
 )
 
 type MCache struct {
@@ -14,7 +14,7 @@ type MCache struct {
 }
 
 // NewMemCache create new memcache adapter.
-func newMemCache(config *internal.CacheConfig) internal.Cacher {
+func newMemCache(config *CacheConfig) Cacher {
 	return &MCache{
 		conn: memcache.New(config.Dsn),
 	}
@@ -86,5 +86,5 @@ func (c *MCache) PutJson(key string, val interface{}, timeout time.Duration) err
 }
 
 func init() {
-	internal.RegisterCacheDriver("memcache", newMemCache)
+	RegisterCacheDriver("memcache", newMemCache)
 }
