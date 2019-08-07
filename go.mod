@@ -6,28 +6,20 @@ require (
 	github.com/Shopify/sarama v1.22.1
 	github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
-	github.com/denisenkom/go-mssqldb v0.0.0-20190515213511-eb9f6a1743f3 // indirect
+	github.com/denisenkom/go-mssqldb v0.0.0-20190806190131-db2462fef53b // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/garyburd/redigo v1.6.0
+	github.com/go-sql-driver/mysql v1.4.1 // indirect
 
-	github.com/go-sql-driver/mysql v1.3.0 // indirect
 	github.com/golang/protobuf v1.3.1
-	github.com/hashicorp/consul v1.4.2
-	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
-	github.com/hashicorp/go-rootcerts v1.0.0 // indirect
-	github.com/hashicorp/serf v0.8.3 // indirect
 	github.com/jinzhu/gorm v1.9.1
-	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
-	github.com/jinzhu/now v1.0.0 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.0.1 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/lib/pq v1.1.1 // indirect
-	github.com/mattn/go-sqlite3 v1.10.0 // indirect
+	github.com/lib/pq v1.2.0 // indirect
+	github.com/mattn/go-sqlite3 v1.11.0 // indirect
 	github.com/micro/go-micro v1.0.0
-	github.com/micro/go-rcache v0.3.0 // indirect
-	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
-	github.com/mitchellh/mapstructure v1.1.2 // indirect
 	github.com/openzipkin/zipkin-go v0.1.6
-	github.com/pborman/uuid v1.2.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20160818020120-3f83fa500528
 )
 
