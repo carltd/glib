@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -25,6 +26,9 @@ type Publisher interface {
 
 type Subscriber interface {
 	NextMessage(timeout time.Duration) (*message.Message, error)
+
+	// get next message with context(Deadline or Timeout)
+	NextMessageWithContext(ctx context.Context) (*message.Message, error)
 	io.Closer
 }
 

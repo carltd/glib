@@ -1,6 +1,7 @@
 package queue_redis
 
 import (
+	"context"
 	"errors"
 	"net"
 	"time"
@@ -22,23 +23,51 @@ type redisSubscriber struct {
 	pbConn  redis.PubSubConn
 }
 
+func (s *redisSubscriber) NextMessageWithContext(ctx context.Context) (*message.Message, error) {
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, nil
+		default:
+		}
+
+		if m, err := s.nextMessage(3 * time.Second); err != nil {
+			// err is timeout, we should enter next
+			if e, ok := err.(net.Error); ok && e.Timeout() {
+				continue
+			}
+			return nil, err
+		} else if m != nil {
+			return m, nil
+		}
+	}
+}
+
+func (s *redisSubscriber) nextMessage(timeout time.Duration) (*message.Message, error) {
+	switch n := s.pbConn.ReceiveWithTimeout(timeout).(type) {
+	case redis.Message:
+		ret := &message.Message{}
+		err := proto.Unmarshal(n.Data, ret)
+		return ret, err
+	case redis.Subscription:
+		if n.Count == 0 {
+			return nil, ErrSubFail
+		}
+	case error:
+		if e, ok := n.(net.Error); ok && e.Timeout() {
+			return nil, queue.ErrTimeout
+		}
+		return nil, n
+	}
+	return nil, nil
+}
+
 func (s *redisSubscriber) NextMessage(timeout time.Duration) (*message.Message, error) {
 	var start = time.Now()
 	for cost := time.Duration(0); cost < timeout; cost = time.Now().Sub(start) {
-		switch n := s.pbConn.ReceiveWithTimeout(timeout - cost).(type) {
-		case redis.Message:
-			ret := &message.Message{}
-			err := proto.Unmarshal(n.Data, ret)
-			return ret, err
-		case redis.Subscription:
-			if n.Count == 0 {
-				return nil, ErrSubFail
-			}
-		case error:
-			if e, ok := n.(net.Error); ok && e.Timeout() {
-				return nil, queue.ErrTimeout
-			}
-			return nil, n
+		if m, err := s.nextMessage(timeout - cost); err != nil || m != nil {
+			return m, err
 		}
 	}
 	return nil, queue.ErrTimeout

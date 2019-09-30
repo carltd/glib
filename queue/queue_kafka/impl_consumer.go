@@ -1,6 +1,7 @@
 package queue_kafka
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -42,7 +43,7 @@ func (s *kafkaSubscriber) Close() error {
 	return s.c.Close()
 }
 
-func (s *kafkaSubscriber) NextMessage(timeout time.Duration) (*message.Message, error) {
+func (s *kafkaSubscriber) NextMessageWithContext(ctx context.Context) (*message.Message, error) {
 	var (
 		err     error
 		msg     *sarama.ConsumerMessage
@@ -51,8 +52,8 @@ func (s *kafkaSubscriber) NextMessage(timeout time.Duration) (*message.Message, 
 
 	for {
 		select {
-		case <-time.After(timeout):
-			return nil, queue.ErrTimeout
+		case <-ctx.Done():
+			return nil, nil
 		case err = <-s.c.Errors():
 			return nil, err
 		case msg = <-s.c.Messages():
@@ -79,5 +80,14 @@ func (s *kafkaSubscriber) NextMessage(timeout time.Duration) (*message.Message, 
 			}
 		}
 	}
+}
 
+func (s *kafkaSubscriber) NextMessage(timeout time.Duration) (*message.Message, error) {
+	if timeout < time.Microsecond {
+		timeout *= time.Microsecond
+	}
+	var ctx, cancel = context.WithTimeout(context.Background(), timeout)
+	var msg, err = s.NextMessageWithContext(ctx)
+	cancel()
+	return msg, err
 }
