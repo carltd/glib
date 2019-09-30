@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/carltd/glib/internal"
+	"github.com/carltd/glib/v2/internal"
 )
 
 var (

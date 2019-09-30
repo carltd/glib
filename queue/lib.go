@@ -10,7 +10,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/carltd/glib/queue/message"
+	"github.com/carltd/glib/v2/queue/message"
 )
 
 var ErrTimeout = errors.New("consumer get message timeout")

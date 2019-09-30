@@ -5,9 +5,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/carltd/glib/queue"
-	"github.com/carltd/glib/queue/message"
-	"github.com/carltd/glib/queue/util"
+	"github.com/carltd/glib/v2/queue"
+	"github.com/carltd/glib/v2/queue/message"
+	"github.com/carltd/glib/v2/queue/util"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"

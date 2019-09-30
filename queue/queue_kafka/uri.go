@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/Shopify/sarama"
-	"github.com/carltd/glib/queue/util"
+	"github.com/carltd/glib/v2/queue/util"
 )
 
 type dialInfo struct {

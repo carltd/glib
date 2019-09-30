@@ -1,4 +1,4 @@
-package memcache // import "github.com/carltd/glib/cache/memcache"
+package memcache // import "github.com/carltd/glib/v2/cache/memcache"
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
-	. "github.com/carltd/glib/internal"
+	. "github.com/carltd/glib/v2/internal"
 )
 
 type MCache struct {

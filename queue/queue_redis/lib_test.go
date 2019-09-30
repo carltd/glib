@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/carltd/glib/queue"
-	"github.com/carltd/glib/queue/message"
-	_ "github.com/carltd/glib/queue/queue_redis"
-	"github.com/carltd/glib/queue/testdata"
-	"github.com/carltd/glib/queue/util"
+	"github.com/carltd/glib/v2/queue"
+	"github.com/carltd/glib/v2/queue/message"
+	_ "github.com/carltd/glib/v2/queue/queue_redis"
+	"github.com/carltd/glib/v2/queue/testdata"
+	"github.com/carltd/glib/v2/queue/util"
 )
 
 const (

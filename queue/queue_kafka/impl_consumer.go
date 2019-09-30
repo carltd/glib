@@ -6,8 +6,8 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/bsm/sarama-cluster"
-	"github.com/carltd/glib/queue"
-	"github.com/carltd/glib/queue/message"
+	"github.com/carltd/glib/v2/queue"
+	"github.com/carltd/glib/v2/queue/message"
 	"github.com/golang/protobuf/proto"
 )
 

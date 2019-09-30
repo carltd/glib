@@ -1,1 +1,1 @@
-package glib // import "github.com/carltd/glib"
+package glib // import "github.com/carltd/glib/v2"

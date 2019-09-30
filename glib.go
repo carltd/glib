@@ -2,8 +2,8 @@ package glib
 
 import (
 	"context"
-	"github.com/carltd/glib/internal"
-	gtrace "github.com/carltd/glib/trace"
+	"github.com/carltd/glib/v2/internal"
+	gtrace "github.com/carltd/glib/v2/trace"
 )
 
 type featureEnabledOptions struct {
@@ -133,7 +133,7 @@ func release(err error) error {
 	return err
 }
 
-// Destroy - 释放glib管理资源
+// Destroy - release all resource
 func Destroy() error {
 	return release(nil)
 }

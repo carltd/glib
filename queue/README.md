@@ -2,17 +2,17 @@
 Queue Lib for glib, internal support Redis Only.
 
 ## Install
-  `go get github.com/carltd/glib/queue`
+  `go get github.com/carltd/glib/v2/queue`
 
 ## Usage
 
 #### Publisher
 ```go
 import (
-    "github.com/carltd/glib/queue/message"
+    "github.com/carltd/glib/v2/queue/message"
     
-    "github.com/carltd/glib/queue"
-    _ "github.com/carltd/glib/queue/queue_redis"
+    "github.com/carltd/glib/v2/queue"
+    _ "github.com/carltd/glib/v2/queue/queue_redis"
 )
 
 pub, _ := queue.NewPublisher("redis", "redis://127.0.0.1:6379")
@@ -25,10 +25,10 @@ pub.Close()
 #### Consumer
 ```go
 import (
-    "github.com/carltd/glib/queue/message"
+    "github.com/carltd/glib/v2/queue/message"
     
-    "github.com/carltd/glib/queue"
-    _ "github.com/carltd/glib/queue/queue_redis"
+    "github.com/carltd/glib/v2/queue"
+    _ "github.com/carltd/glib/v2/queue/queue_redis"
 )
 
 con, _ := queue.NewConsumer("redis", "redis://127.0.0.1:6379")

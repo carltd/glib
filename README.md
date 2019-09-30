@@ -3,7 +3,7 @@
 ## Install glib
 ```bash
 #install glib
-go get github.com/carltd/glib
+go get github.com/carltd/glib/v2
 dep ensure
 ```
 
@@ -24,9 +24,9 @@ import (
 
 	"github.com/micro/go-log"
 
-	"github.com/carltd/glib"
-	_ "github.com/carltd/glib/cache/memcache"
-	_ "github.com/carltd/glib/cache/redis"
+	"github.com/carltd/glib/v2"
+	_ "github.com/carltd/glib/v2/cache/memcache"
+	_ "github.com/carltd/glib/v2/cache/redis"
 	"gopkg.in/mgo.v2/bson"
 )
 

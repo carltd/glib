@@ -1,4 +1,4 @@
-module github.com/carltd/glib
+module github.com/carltd/glib/v2
 
 go 1.12
 

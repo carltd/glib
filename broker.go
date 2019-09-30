@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/carltd/glib/queue"
+	"github.com/carltd/glib/v2/queue"
 )
 
 type brokerConfig struct {

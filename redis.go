@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/carltd/glib/redis_wrapper"
+	"github.com/carltd/glib/v2/redis_wrapper"
 )
 
 type redisConfig struct {

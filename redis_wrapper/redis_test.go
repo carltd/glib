@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/carltd/glib/redis_wrapper"
+	"github.com/carltd/glib/v2/redis_wrapper"
 	"github.com/garyburd/redigo/redis"
 )
 

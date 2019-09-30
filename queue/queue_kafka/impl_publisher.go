@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/carltd/glib/queue/message"
+	"github.com/carltd/glib/v2/queue/message"
 )
 
 type kafkaProducer struct {

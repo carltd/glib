@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/carltd/glib/internal"
-	"github.com/carltd/glib/queue"
+	"github.com/carltd/glib/v2/internal"
+	"github.com/carltd/glib/v2/queue"
 	"github.com/garyburd/redigo/redis"
 )
 

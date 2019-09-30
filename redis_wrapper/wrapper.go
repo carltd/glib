@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/carltd/glib/internal"
+	"github.com/carltd/glib/v2/internal"
 	"github.com/garyburd/redigo/redis"
 )
 
